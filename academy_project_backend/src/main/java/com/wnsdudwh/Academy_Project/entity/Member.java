@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Member {
-
+public class Member
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idx;
