@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @RestController   // REST API 전용 컨트롤러. @Controller + @ResponseBody 포함됨
 @RequestMapping("/auth")   // 이 컨트롤러의 기본 경로: /auth/...
 @RequiredArgsConstructor  // final로 선언된 멤버변수를 생성자로 주입해줌
@@ -46,7 +49,16 @@ public class AuthController
             return ResponseEntity.badRequest().body("비밀번호가 일치하지 않습니다.");
         }
 
-        // ✅ 3. 로그인 성공 → JWT 토큰 발급
+        // ✅ 2.5. 로그인 성공 → 마지막 로그인 시간 저장
+        // ⭐ 초까지만 자르고 다시 LocalDateTime 객체로 만들어 저장
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedTime = LocalDateTime.now().format(formatter);
+        LocalDateTime truncatedTime = LocalDateTime.parse(formattedTime, formatter);
+
+        member.setLastLogin(truncatedTime);
+        memberRepository.save(member);
+
+        // ✅ 3. 로그인 성공 → JWT 토큰 발급 -> ~
         String token = jwtUtil.generateToken(member.getUserid());
 
         // ✅ 4. 토큰과 닉네임을 DTO에 담아서 응답

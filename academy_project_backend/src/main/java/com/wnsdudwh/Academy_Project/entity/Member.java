@@ -44,4 +44,10 @@ public class Member
     @CreatedDate
     private LocalDateTime regDate;
 
+    @Column(nullable = false) // DB에 저장할 때 null 안 됨
+    @Builder.Default          // 빌더 패턴 쓸 때 기본값 자동으로 넣어줌
+    private boolean delFlag = false;  // 탈퇴 여부 or 계정 활성 여부
+
+    @Column
+    private LocalDateTime lastLogin;  // 최근 로그인 시간
 }

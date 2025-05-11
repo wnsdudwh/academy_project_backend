@@ -2,8 +2,10 @@ package com.wnsdudwh.Academy_Project.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -58,11 +60,34 @@ public class JwtUtil
                 .getSubject();
     }
 
-
     // 🔐 시크릿 키 생성
     private Key getSigningKey()
     {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
+
+    // request.getHeader()에서 JWT 토큰을 뽑아오는 메서드
+    public String resolveToken(HttpServletRequest request)
+    {
+        String bearerToken = request.getHeader("Authorization");
+
+        if (bearerToken != null && bearerToken.startsWith("Bearer "))
+        {
+            return bearerToken.substring(7); // "Bearer " 이후 문자열 반환
+        }
+
+        return null;
+    }
+
+    // 🔓 토큰에서 사용자 아이디 추출
+    public String extractUsername(String token)
+    {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject(); // 🔑 sub에 해당하는 값이 아이디
     }
 
 }
