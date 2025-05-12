@@ -23,6 +23,12 @@ public class MemberServiceImpl implements MemberService
     @Override
     public void saveMember(MemberDTO dto)
     {
+        // 🔍 닉네임 중복 체크
+        if (memberRepository.findByNickname(dto.getNickname()).isPresent())
+        {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+
         Member member = Member.builder()
                 .usernumber(UUID.randomUUID().toString())
                 .userid(dto.getUserid())

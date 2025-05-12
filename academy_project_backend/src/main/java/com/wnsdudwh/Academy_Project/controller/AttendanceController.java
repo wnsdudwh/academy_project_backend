@@ -40,23 +40,28 @@ public class AttendanceController
             return ResponseEntity.badRequest().body("입력된 사용자 정보를 찾을 수 없습니다.");
         }
 
+        // 3. 오늘 날짜 확인
         LocalDate today = LocalDate.now();
 
-        // 3. 오늘 날짜에 출석한 적 있는지 확인
+        // 4. 오늘 날짜에 출석한 적 있는지 확인
         Optional<Attendance> result = attendanceRepository.findByMemberAndDate(member, today);
         if (result.isPresent())
         {
             return ResponseEntity.badRequest().body("오늘 이미 출석했습니다!");
         }
 
-        // 4. 출석기록 없으면 출석 기록 저장
+        // 5. 출석기록 없으면 출석 기록 저장
         Attendance attendance = Attendance.builder()
                 .member(member)
                 .date(LocalDate.now())
                 .build();
         attendanceRepository.save(attendance);
 
-        return ResponseEntity.ok("출석 완료!");
-    }
+        //  6. 포인트 +50 지급
+        int currentPoint = member.getPoint();   //  현재포인트 갖고옴
+        member.setPoint(currentPoint + 50);     // 갖고온 포인트에 +50원
+        memberRepository.save(member);         // 작업 후 저장
 
+        return ResponseEntity.ok("출석 완료! [50 포인트]가 지급되었습니다.");
+    }
 }

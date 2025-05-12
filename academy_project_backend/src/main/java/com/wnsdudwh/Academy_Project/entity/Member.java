@@ -50,4 +50,8 @@ public class Member
 
     @Column
     private LocalDateTime lastLogin;  // 최근 로그인 시간
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int point = 0;
 }
