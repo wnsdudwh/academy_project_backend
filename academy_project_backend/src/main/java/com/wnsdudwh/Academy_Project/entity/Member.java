@@ -54,4 +54,13 @@ public class Member
     @Column(nullable = false)
     @Builder.Default
     private int point = 0;
+
+    // 휴대폰 번호
+    @Column(length = 20)
+    private String phone;
+
+    // 휴대폰 등록 여부 (타사 이메일 인증 및 휴면계정 느낌)
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean enable = false;
 }

@@ -20,4 +20,6 @@ public class MemberDTO
     private String username;
 
     private String nickname;
+
+    private String phone;
 }
