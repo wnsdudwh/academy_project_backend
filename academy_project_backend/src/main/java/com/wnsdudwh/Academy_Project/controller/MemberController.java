@@ -74,12 +74,13 @@ public class MemberController
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
 
-        // 3. 응답에 필요한 정보만 담기
+        // 3. 응답에 필요한 정보만 담기 (프론트로 보낼 정보 {userInfo?.phone})
         Map<String, Object> response = new HashMap<>();
         response.put("userId", member.getUserid());
         response.put("nickname", member.getNickname());
         response.put("regDate", member.getRegDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         response.put("point", member.getPoint());
+        response.put("phone", member.getPhone()); // ✅ 새로 추가됨
 
         return ResponseEntity.ok(response);
     }
@@ -168,6 +169,32 @@ public class MemberController
         memberRepository.save(member);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    }
+
+    // 📌 회원 정보 수정 컨트롤러 (휴대폰번호 수정)
+    @PutMapping("/mypage/update-phone")
+    public ResponseEntity<?> updatePhone(@RequestBody MemberDTO dto, HttpServletRequest request)
+    {
+        String token = jwtUtil.resolveToken(request);
+        String userId = jwtUtil.extractUsername(token);
+
+        Member member = memberRepository.findByUserid(userId);
+
+        if (member == null)
+        {
+            return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
+        }
+
+        if (dto.getPhone() != null && !dto.getPhone().isEmpty())
+        {
+            member.setPhone(dto.getPhone());
+            member.setEnable(true); //폰번호 등록시 enable=true 활성화
+            memberRepository.save(member);
+
+            return ResponseEntity.ok("휴대폰 번호가 등록되었습니다.");
+        }
+
+        return ResponseEntity.badRequest().body("휴대폰 번호를 입력 해 주세요.");
     }
 
 }

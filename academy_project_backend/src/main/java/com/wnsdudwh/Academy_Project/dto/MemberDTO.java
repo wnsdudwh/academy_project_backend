@@ -22,4 +22,6 @@ public class MemberDTO
     private String nickname;
 
     private String phone;
+
+    private boolean enable;
 }
