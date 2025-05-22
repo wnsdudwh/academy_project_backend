@@ -1,12 +1,15 @@
 package com.wnsdudwh.Academy_Project.service.impl;
 
+import com.wnsdudwh.Academy_Project.dto.ProductOptionSaveDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductSaveRequestDTO;
 import com.wnsdudwh.Academy_Project.entity.Brand;
 import com.wnsdudwh.Academy_Project.entity.Category;
 import com.wnsdudwh.Academy_Project.entity.Product;
+import com.wnsdudwh.Academy_Project.entity.ProductOption;
 import com.wnsdudwh.Academy_Project.repository.BrandRepository;
 import com.wnsdudwh.Academy_Project.repository.CategoryRepository;
+import com.wnsdudwh.Academy_Project.repository.ProductOptionRepository;
 import com.wnsdudwh.Academy_Project.repository.ProductRepository;
 import com.wnsdudwh.Academy_Project.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -23,6 +26,7 @@ public class ProductServiceImpl implements ProductService
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductOptionRepository productOptionRepository;
 
     @Override
     @Transactional
@@ -53,6 +57,25 @@ public class ProductServiceImpl implements ProductService
                 .build();
 
         productRepository.save(product);
+
+        // 옵션 리스트 저장
+        if (dto.getOptions() != null && dto.getOptions().isEmpty())
+        {
+            for (ProductOptionSaveDTO optionDTO : dto.getOptions())
+            {
+                ProductOption option = ProductOption.builder()
+                        .optionName(optionDTO.getOptionName())
+                        .optionType(optionDTO.getOptionType())
+                        .additionalPrice(optionDTO.getAdditionalPrice())
+                        .stock(optionDTO.getStock())
+                        .soldOut(optionDTO.isSoldOut())
+                        .product(product) // FK 연관 ☆
+                        .build();
+
+                // repository 생성 후 저장
+                productOptionRepository.save(option);
+            }
+        }
         return product.getId();
     }
 

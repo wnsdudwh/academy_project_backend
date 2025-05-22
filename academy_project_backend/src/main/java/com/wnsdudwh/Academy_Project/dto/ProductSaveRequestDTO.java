@@ -3,9 +3,9 @@ package com.wnsdudwh.Academy_Project.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -49,4 +49,6 @@ public class ProductSaveRequestDTO
 
     // 카테고리 ID (🔗 Category 연관관계)
     private Long categoryId;
+
+    private List<ProductOptionSaveDTO> options; // 상품 옵션리스트 추가
 }
