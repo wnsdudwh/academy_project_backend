@@ -21,10 +21,10 @@ public class ProductController
     private final ProductRepository productRepository;
 
     // 📌 상품 등록 API
-    @PostMapping
-    public ResponseEntity<String> registerProduct(@RequestBody ProductSaveRequestDTO dto)
+    @PostMapping("/register")
+    public ResponseEntity<String> registerProduct(@ModelAttribute ProductSaveRequestDTO dto)
     {
-        Long saveId = productService.registerProduct(dto);
+        Long saveId = productService.registerProductWithImages(dto);
         return ResponseEntity.ok("상품 등록 완료 (ID : " + saveId + ")");
     }
 
@@ -78,6 +78,13 @@ public class ProductController
 
         // 📌 5. 정상 응답 반환 (HTTP 200 OK + 상품 데이터)
         return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateProduct(@PathVariable Long id, @ModelAttribute ProductSaveRequestDTO dto)
+    {
+        Long updatedId = productService.updateProductWithImages(id, dto);
+        return ResponseEntity.ok("상품 수정 완료 (ID : " + updatedId + ")");
     }
 
 }

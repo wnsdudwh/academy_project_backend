@@ -3,10 +3,7 @@ package com.wnsdudwh.Academy_Project.service.impl;
 import com.wnsdudwh.Academy_Project.dto.ProductOptionSaveDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductSaveRequestDTO;
-import com.wnsdudwh.Academy_Project.entity.Brand;
-import com.wnsdudwh.Academy_Project.entity.Category;
-import com.wnsdudwh.Academy_Project.entity.Product;
-import com.wnsdudwh.Academy_Project.entity.ProductOption;
+import com.wnsdudwh.Academy_Project.entity.*;
 import com.wnsdudwh.Academy_Project.repository.BrandRepository;
 import com.wnsdudwh.Academy_Project.repository.CategoryRepository;
 import com.wnsdudwh.Academy_Project.repository.ProductOptionRepository;
@@ -15,7 +12,10 @@ import com.wnsdudwh.Academy_Project.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -120,5 +120,173 @@ public class ProductServiceImpl implements ProductService
                             .build();
                 })
                 .toList();
+    }
+
+    @Override
+    public Long registerProductWithImages(ProductSaveRequestDTO dto)
+    {
+        // 상품 저장
+        Brand brand = brandRepository.findById(dto.getBrandId()).orElseThrow();
+        Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow();
+
+        Product product = Product.builder()
+                .productCode(dto.getProductCode())
+                .name(dto.getName())
+                .price(dto.getPrice())
+                .discount(dto.isDiscount())
+                .discountRate(dto.getDiscountRate())
+                .pointRate(dto.getPointRate())
+                .shippingFee(dto.getShippingFee())
+                .stockTotal(dto.getStockTotal())
+                .status(dto.getStatus())
+                .shortDescription(dto.getShortDescription())
+                .brand(brand)
+                .category(category)
+                .thumbnailUrl("/upload/products/" + dto.getProductCode() + "/" + dto.getThumbnail().getOriginalFilename())
+                .viewCount(0)
+                .soldCount(0)
+                .build();
+        
+        productRepository.save(product);
+        
+        // 이미지 저장
+        String uploadDir = "D:/upload/products/" + dto.getProductCode();
+        File dir = new File(uploadDir);
+        if (!dir.exists()) dir.mkdirs();
+
+// 📌 이미지 객체 생성 및 product에 추가
+        if (dto.getSubImages() != null)
+        {
+            for (MultipartFile img : dto.getSubImages())
+            {
+                String fileName = img.getOriginalFilename();
+
+                // 이미지 엔티티 생성
+                ProductImage pi = ProductImage.builder()
+                        .imageUrl("/upload/products/" + dto.getProductCode() + "/" + fileName)
+                        .product(product) // 연관관계 설정
+                        .build();
+
+                product.getImageList().add(pi); // 양방향 연관관계 연결
+            }
+        }
+
+        try
+        {
+            // 썸네일 저장
+            MultipartFile thumb = dto.getThumbnail();
+            thumb.transferTo(new File(uploadDir + "/" + thumb.getOriginalFilename()));
+
+            // 서브 이미지 저장
+            if (dto.getSubImages() != null)
+            {
+                for (MultipartFile img : dto.getSubImages())
+                {
+                    img.transferTo(new File(uploadDir + "/" + img.getOriginalFilename()));
+                }
+
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("이미지 저장 중 오류 발생", e);
+        }
+
+        return product.getId();
+    }
+
+    @Override
+    public void updateProductWithImages(Long id, ProductSaveRequestDTO dto)
+    {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        Brand brand = brandRepository.findById(dto.getBrandId())
+                .orElseThrow(() -> new RuntimeException("해당 브랜드가 존재하지 않습니다."));
+
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("해당 카테고리가 존재하지 않습니다."));
+
+        //  기존 값 갱신
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
+        product.setDiscount(dto.isDiscount());
+        product.setDiscountRate(dto.getDiscountRate());
+        product.setPointRate(dto.getPointRate());
+        product.setShippingFee(dto.getShippingFee());
+        product.setStockTotal(dto.getStockTotal());
+        product.setStatus(dto.getStatus());
+        product.setShortDescription(dto.getShortDescription());
+        product.setBrand(brand);
+        product.setCategory(category);
+
+        // 이미지가 넘어오면 새 이미지로 덮어쓰기
+        String uploadDir = "D:/upload/products/" + dto.getProductCode();
+        File dir = new File(uploadDir);
+        if (!dir.exists()) dir.mkdirs();
+
+        try
+        {
+            if (dto.getThumbnail() != null)
+            {
+                MultipartFile thumb = dto.getThumbnail();
+                thumb.transferTo(new File(uploadDir + "/" + thumb.getOriginalFilename()));
+                product.setThumbnailUrl("/upload/products/" + product.getProductCode() + "/" + thumb.getOriginalFilename());
+            }
+
+            if (dto.getSubImages() != null && !dto.getSubImages().isEmpty())
+            {
+                // 기존 이미지 리스트 초기화 or 삭제하고 새로 추가
+                product.getImageList().clear();
+
+                for (MultipartFile img : dto.getSubImages())
+                {
+                    String fileName = img.getOriginalFilename();
+                    img.transferTo(new File(uploadDir + "/" + fileName));
+
+                    ProductImage pi = ProductImage.builder()
+                            .imageUrl("/upload/products/" + product.getProductCode() + "/" + fileName)
+                            .product(product)
+                            .build();
+
+                    product.getImageList().add(pi);
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("이미지 저장 중 오류", e);
+        }
+
+        productRepository.save(product);
+    }
+
+    @Override
+    @Transactional
+    public Long updateProduct(Long id, ProductSaveRequestDTO dto)
+    {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        Brand brand = brandRepository.findById(dto.getBrandId())
+                .orElseThrow(() -> new RuntimeException("해당 브랜드가 존재하지 않습니다."));
+
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("해당 카테고리가 존재하지 않습니다."));
+
+        //  기존 값 갱신
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
+        product.setDiscount(dto.isDiscount());
+        product.setDiscountRate(dto.getDiscountRate());
+        product.setPointRate(dto.getPointRate());
+        product.setShippingFee(dto.getShippingFee());
+        product.setStockTotal(dto.getStockTotal());
+        product.setStatus(dto.getStatus());
+        product.setShortDescription(dto.getShortDescription());
+        product.setBrand(brand);
+        product.setCategory(category);
+
+        return product.getId();
     }
 }

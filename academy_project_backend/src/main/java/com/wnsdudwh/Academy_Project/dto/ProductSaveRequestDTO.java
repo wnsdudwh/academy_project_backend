@@ -1,6 +1,7 @@
 package com.wnsdudwh.Academy_Project.dto;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,4 +52,8 @@ public class ProductSaveRequestDTO
     private Long categoryId;
 
     private List<ProductOptionSaveDTO> options; // 상품 옵션리스트 추가
+
+    //  파일 필드 추가
+    private MultipartFile thumbnail;
+    private List<MultipartFile> subImages;
 }
