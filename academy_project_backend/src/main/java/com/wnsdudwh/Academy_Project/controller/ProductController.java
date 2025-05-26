@@ -3,6 +3,7 @@ package com.wnsdudwh.Academy_Project.controller;
 import com.wnsdudwh.Academy_Project.dto.ProductResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductSaveRequestDTO;
 import com.wnsdudwh.Academy_Project.entity.Product;
+import com.wnsdudwh.Academy_Project.entity.ProductImage;
 import com.wnsdudwh.Academy_Project.repository.ProductRepository;
 import com.wnsdudwh.Academy_Project.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class ProductController
     @PostMapping("/register")
     public ResponseEntity<String> registerProduct(@ModelAttribute ProductSaveRequestDTO dto)
     {
-        Long saveId = productService.registerProductWithImages(dto);
+        Long saveId = productService.registerProduct(dto);
         return ResponseEntity.ok("상품 등록 완료 (ID : " + saveId + ")");
     }
 
@@ -37,6 +38,14 @@ public class ProductController
         return ResponseEntity.ok(products);
     }
 
+    // 이미지 수정+ 상품수정
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateProductWithImages(@PathVariable Long id, @ModelAttribute ProductSaveRequestDTO dto)
+    {
+        Long updatedId = productService.updateProductWithImages(id, dto);
+        return ResponseEntity.ok("상품 수정 완료 (ID : " + updatedId + ")");
+    }
+
     // 상품 상세 조회 API
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable("id") Long id)
@@ -44,6 +53,12 @@ public class ProductController
         // 📌 1. 상품 ID로 DB에서 상품 조회
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        // 상품 이미지 조회
+        List<String> subImageUrls = product.getImageList()
+                .stream()
+                .map(ProductImage::getImageUrl)
+                .toList();
 
         // 📌 2. 가격 관련 데이터 계산 (할인가 포함)
         int rawPrice = product.getPrice();
@@ -74,17 +89,10 @@ public class ProductController
                 .shortDescription(product.getShortDescription())
                 .brandName(product.getBrand().getName()) // 💡 연관관계에서 브랜드명 추출
                 .categoryName(product.getCategory().getName()) // 💡 연관관계에서 카테고리명 추출
+                .subImages(subImageUrls)
                 .build();
 
         // 📌 5. 정상 응답 반환 (HTTP 200 OK + 상품 데이터)
         return ResponseEntity.ok(dto);
     }
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateProduct(@PathVariable Long id, @ModelAttribute ProductSaveRequestDTO dto)
-    {
-        Long updatedId = productService.updateProductWithImages(id, dto);
-        return ResponseEntity.ok("상품 수정 완료 (ID : " + updatedId + ")");
-    }
-
 }

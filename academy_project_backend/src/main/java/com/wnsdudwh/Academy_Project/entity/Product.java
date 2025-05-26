@@ -90,6 +90,7 @@ public class Product
 
     // 🔗 상품 이미지 연관관계 (OneToMany)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<ProductImage> imageList = new ArrayList<>();
 
     // 등록일 자동 설정 (엔티티 저장 시 자동 설정)

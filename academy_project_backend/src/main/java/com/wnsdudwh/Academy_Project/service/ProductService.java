@@ -12,8 +12,10 @@ public interface ProductService
 
     List<ProductResponseDTO> getAllProducts();
 
-    @Transactional
-    Long registerProductWithImages(ProductSaveRequestDTO dto);
-
     Long updateProduct(Long id, ProductSaveRequestDTO dto);
+
+//    @Transactional
+//    Long registerProductWithImages(ProductSaveRequestDTO dto);    추가 후 기존 register와 통합
+
+    Long updateProductWithImages(Long id, ProductSaveRequestDTO dto);
 }

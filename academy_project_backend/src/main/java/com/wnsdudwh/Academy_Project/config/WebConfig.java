@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -24,4 +25,13 @@ public class WebConfig implements WebMvcConfigurer
     {
         return new BCryptPasswordEncoder();
     }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry)
+    {
+        // 예: http://localhost:8080/upload/products/GT-005/thumb.jpg
+        registry.addResourceHandler("/upload/**")   //요청경로   /upload/...
+                .addResourceLocations("file:///D:/upload/");    //실제 폴더의 경로 (file:// + 절대경로 /D:/...)
+    }
+
 }

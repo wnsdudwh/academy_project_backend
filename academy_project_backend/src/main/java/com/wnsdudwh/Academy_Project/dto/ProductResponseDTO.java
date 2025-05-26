@@ -3,6 +3,7 @@ package com.wnsdudwh.Academy_Project.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,4 +29,6 @@ public class ProductResponseDTO
 
     private String brandName;
     private String categoryName;
+
+    private List<String> subImages;
 }
