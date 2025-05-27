@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,4 +101,19 @@ public class Product
         this.createdAt = LocalDateTime.now();
     }
 
+    // 상품 진열 여부
+    @Column(nullable = false)
+    private boolean visible = true;
+
+    // 신상품 여부 (NEW 뱃지 표시용)
+    @Column(nullable = false)
+    private boolean newProduct = false;
+
+    // 출시일 (형식: yyyy-MM-dd)
+    @Column
+    private LocalDate releaseDate;
+
+    // 태그 (콤마로 구분된 키워드 문자열)
+    @Column(length = 500)
+    private String tags;
 }

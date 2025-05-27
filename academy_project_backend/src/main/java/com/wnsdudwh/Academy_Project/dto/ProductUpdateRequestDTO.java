@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -29,4 +30,13 @@ public class ProductUpdateRequestDTO
     // 📌 수정 시 첨부할 새 이미지들
     private MultipartFile thumbnail;
     private List<MultipartFile> subImages;
+
+    // 상품 표시 여부
+    private boolean visible;
+    // 상품의 신상품 여부
+    private boolean newProduct;
+    // 상품이 게시될 날짜
+    private LocalDate releaseDate;
+    // 상품의 한줄 태그 ex)#펜더, ~~
+    private String tags;
 }

@@ -3,6 +3,7 @@ package com.wnsdudwh.Academy_Project.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -31,4 +32,13 @@ public class ProductResponseDTO
     private String categoryName;
 
     private List<String> subImages;
+
+    // 상품 표시 여부
+    private boolean visible;
+    // 상품의 신상품 여부
+    private boolean newProduct;
+    // 상품이 게시될 날짜
+    private LocalDate releaseDate;
+    // 상품의 한줄 태그 ex)#펜더, ~~
+    private String tags;
 }

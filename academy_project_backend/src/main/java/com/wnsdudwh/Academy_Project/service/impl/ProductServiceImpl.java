@@ -53,6 +53,10 @@ public class ProductServiceImpl implements ProductService
         product.setShortDescription(dto.getShortDescription());
         product.setBrand(brand);
         product.setCategory(category);
+        product.setVisible(dto.isVisible());
+        product.setNewProduct(dto.isNewProduct());
+        product.setReleaseDate(dto.getReleaseDate());
+        product.setTags(dto.getTags());
     }
 
     // 이미지 저장 함수
@@ -104,9 +108,9 @@ public class ProductServiceImpl implements ProductService
         productRepository.save(product); // 🔐 FK 미리 필요
 
         // ✅ 옵션 저장
-        if (dto.getOptions() != null && !dto.getOptions().isEmpty())
+        if (dto.getOptionList() != null && !dto.getOptionList().isEmpty())
         {
-            for (ProductOptionSaveDTO optionDTO : dto.getOptions())
+            for (ProductOptionSaveDTO optionDTO : dto.getOptionList())
             {
                 ProductOption option = ProductOption.builder()
                         .optionName(optionDTO.getOptionName())
@@ -121,8 +125,9 @@ public class ProductServiceImpl implements ProductService
             }
         }
 
-        if (dto.getOptions() != null) {
-            for (ProductOptionSaveDTO optionDTO : dto.getOptions()) {
+        if (dto.getOptionList() != null)
+        {
+            for (ProductOptionSaveDTO optionDTO : dto.getOptionList()) {
                 ProductOption option = ProductOption.builder()
                         .optionName(optionDTO.getOptionName())
                         .optionType(optionDTO.getOptionType())
@@ -190,6 +195,10 @@ public class ProductServiceImpl implements ProductService
                             .brandName(product.getBrand().getName())
                             .categoryName(product.getCategory().getName())
                             .discountPrice(discountPrice) // ✅ 여기에 세팅!
+                            .visible(product.isVisible())
+                            .newProduct(product.isNewProduct())
+                            .releaseDate(product.getReleaseDate())
+                            .tags(product.getTags())
                             .build();
                 })
                 .toList();

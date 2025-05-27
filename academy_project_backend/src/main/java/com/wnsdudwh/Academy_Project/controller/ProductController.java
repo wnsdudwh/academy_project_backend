@@ -25,7 +25,10 @@ public class ProductController
     @PostMapping("/register")
     public ResponseEntity<String> registerProduct(@ModelAttribute ProductSaveRequestDTO dto)
     {
+        dto.parseOptions(); // 파싱 수행
         Long saveId = productService.registerProduct(dto);
+        System.out.println("썸네일 파일: " + dto.getThumbnail());
+        System.out.println("썸네일 URL: " + dto.getThumbnailUrl()); // ← 여기 null이면 원인
         return ResponseEntity.ok("상품 등록 완료 (ID : " + saveId + ")");
     }
 
