@@ -49,7 +49,7 @@ public class ProductServiceImpl implements ProductService
         product.setPointRate(dto.getPointRate());
         product.setShippingFee(dto.getShippingFee());
         product.setStockTotal(dto.getStockTotal());
-        product.setStatus(dto.getStatus());
+        product.setStatus(Status.valueOf(dto.getStatus())); // enum으로 관리 변경해서 valufOf 추가
         product.setShortDescription(dto.getShortDescription());
         product.setBrand(brand);
         product.setCategory(category);
@@ -189,7 +189,7 @@ public class ProductServiceImpl implements ProductService
                             .pointRate(product.getPointRate())
                             .shippingFee(product.getShippingFee())
                             .stockTotal(product.getStockTotal())
-                            .status(product.getStatus())
+                            .status(product.getStatus().name()) // enum ~ .name()
                             .thumbnailUrl(product.getThumbnailUrl())
                             .shortDescription(product.getShortDescription())
                             .brandName(product.getBrand().getName())
@@ -205,7 +205,8 @@ public class ProductServiceImpl implements ProductService
     }
 
     @Override
-    public Long updateProductWithImages(Long id, ProductSaveRequestDTO dto)
+    @Transactional
+    public Long updateProduct(Long id, ProductSaveRequestDTO dto)
     {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
@@ -253,14 +254,45 @@ public class ProductServiceImpl implements ProductService
 
     @Override
     @Transactional
-    public Long updateProduct(Long id, ProductSaveRequestDTO dto)
+    public void updateProductVisibility(Long id, boolean visible)
     {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
-
-        Object[] bc = getBrandAndCategory(dto.getBrandId(), dto.getCategoryId());
-        applyDtoToProduct(product, dto, (Brand) bc[0], (Category) bc[1]);
-
-        return product.getId();
+                .orElseThrow(() -> new RuntimeException("해당 상품 없음"));
+        product.setVisible(visible);
+        productRepository.save(product);
     }
+
+    @Override
+    @Transactional
+    public void softDeleteProduct(Long id)
+    {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 상품 없음"));
+        product.setStatus(Status.UNAVAILABLE); // enum 사용 중
+        product.setVisible(false);
+        productRepository.save(product);
+    }
+
+    @Override
+    public void updateProductStatus(Long id, Status status)
+    {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 상품 없음"));
+        product.setStatus(status);
+        productRepository.save(product);
+    }
+
+    //통합으로 인한 주석 추후 삭제요망.
+//    @Override
+//    @Transactional
+//    public Long updateProduct(Long id, ProductSaveRequestDTO dto)
+//    {
+//        Product product = productRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+//
+//        Object[] bc = getBrandAndCategory(dto.getBrandId(), dto.getCategoryId());
+//        applyDtoToProduct(product, dto, (Brand) bc[0], (Category) bc[1]);
+//
+//        return product.getId();
+//    }
 }

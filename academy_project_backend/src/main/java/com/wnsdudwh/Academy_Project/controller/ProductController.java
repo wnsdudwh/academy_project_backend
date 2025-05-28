@@ -4,6 +4,7 @@ import com.wnsdudwh.Academy_Project.dto.ProductResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductSaveRequestDTO;
 import com.wnsdudwh.Academy_Project.entity.Product;
 import com.wnsdudwh.Academy_Project.entity.ProductImage;
+import com.wnsdudwh.Academy_Project.entity.Status;
 import com.wnsdudwh.Academy_Project.repository.ProductRepository;
 import com.wnsdudwh.Academy_Project.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping ("/api/products")
@@ -43,9 +45,9 @@ public class ProductController
 
     // 이미지 수정+ 상품수정
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateProductWithImages(@PathVariable Long id, @ModelAttribute ProductSaveRequestDTO dto)
+    public ResponseEntity<String> updateProduct(@PathVariable Long id, @ModelAttribute ProductSaveRequestDTO dto)
     {
-        Long updatedId = productService.updateProductWithImages(id, dto);
+        Long updatedId = productService.updateProduct(id, dto);
         return ResponseEntity.ok("상품 수정 완료 (ID : " + updatedId + ")");
     }
 
@@ -87,15 +89,45 @@ public class ProductController
                 .pointRate(product.getPointRate())
                 .shippingFee(product.getShippingFee())
                 .stockTotal(product.getStockTotal())
-                .status(product.getStatus())
+                .status(product.getStatus().name()) // enum으로 관리 변경해서 .name() 추가
                 .thumbnailUrl(product.getThumbnailUrl())
                 .shortDescription(product.getShortDescription())
+                .brandId(product.getBrand().getId())
                 .brandName(product.getBrand().getName()) // 💡 연관관계에서 브랜드명 추출
+                .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName()) // 💡 연관관계에서 카테고리명 추출
                 .subImages(subImageUrls)
+                .tags(product.getTags())
                 .build();
 
         // 📌 5. 정상 응답 반환 (HTTP 200 OK + 상품 데이터)
         return ResponseEntity.ok(dto);
     }
+
+    // 어드민 상품목록에서 원터치로 (눈 아이콘) 진열 및 숨김 처리할 API
+    @PutMapping("{id}/visibility")
+    public ResponseEntity<Void> updateProductVisibility(@PathVariable Long id, @RequestBody Map<String, Boolean> request)
+    {
+        boolean visible = request.get("visible");
+        productService.updateProductVisibility(id, visible);
+        return ResponseEntity.ok().build();
+    }
+
+    // 어드민 상품목록에서 관리 (상품상태 SELECT) 원터치 수정
+    @PutMapping("{id}/status")
+    public ResponseEntity<?> updateProductStatus(@PathVariable Long id, @RequestBody Map<String, String> request)
+    {
+        String status = request.get("status");
+        productService.updateProductStatus(id, Status.valueOf(status)); //enum 사용
+        return ResponseEntity.ok().build();
+    }
+
+    // 어드민 상품목록에서 삭제 (휴지통 아이콘) 클릭시 호출할 소프트 삭제 API
+    @PutMapping("{id}/soft-delete")
+    public ResponseEntity<Void> softDeleteProduct(@PathVariable Long id)
+    {
+        productService.softDeleteProduct(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

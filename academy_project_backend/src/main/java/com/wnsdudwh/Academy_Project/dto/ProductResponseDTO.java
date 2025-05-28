@@ -28,6 +28,8 @@ public class ProductResponseDTO
     private String thumbnailUrl;
     private String shortDescription;
 
+    private Long brandId;
+    private Long categoryId;
     private String brandName;
     private String categoryName;
 

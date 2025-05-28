@@ -26,6 +26,8 @@ public class ProductUpdateRequestDTO
 
     private Long brandId;
     private Long categoryId;
+    private String brandName;
+    private String categoryName;
 
     // 📌 수정 시 첨부할 새 이미지들
     private MultipartFile thumbnail;

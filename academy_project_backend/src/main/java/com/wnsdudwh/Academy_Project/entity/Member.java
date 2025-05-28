@@ -36,9 +36,10 @@ public class Member
     @Column(nullable = false, length = 12, unique = true)
     private String nickname;
 
+    @Enumerated(EnumType.STRING)    // 문자열로 저장되도록 변경(기존은 0~3 숫자)
     @Column(nullable = false)
     @Builder.Default
-    private Role role = Role.ROLE_USER;
+    private Role role = Role.ROLE_USER; // 회원이 되면 기본값은 USER
 
     @Column
     @CreatedDate

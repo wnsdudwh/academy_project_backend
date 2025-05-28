@@ -56,8 +56,9 @@ public class Product
     private int stockTotal;
 
     // 상태 (판매중, 품절 등)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
+    private Status status;
 
     // 썸네일 이미지 URL
     @Column(length = 255)
