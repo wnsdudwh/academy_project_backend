@@ -21,6 +21,9 @@ public interface ProductService
 
     void updateProductStatus(Long id, Status status);
 
+    ProductResponseDTO getProductById(Long id);
+
+
 //    @Transactional
 //    Long registerProductWithImages(ProductSaveRequestDTO dto);    추가 후 기존 register와 통합
 

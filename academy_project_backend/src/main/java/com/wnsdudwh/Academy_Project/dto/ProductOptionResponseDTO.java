@@ -1,19 +1,16 @@
 package com.wnsdudwh.Academy_Project.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class ProductOptionSaveDTO
+public class ProductOptionResponseDTO
 {
     private String optionName;      // 예: Red
     private String optionType;      // 예: 컬러
     private Integer additionalPrice;    // 예: 20000
     private Integer stock;              // 재고
-    private boolean soldOut = false;        // 품절 여부, 기본값 false
+    private boolean soldOut;        // 품절 여부, 기본값 false
 }

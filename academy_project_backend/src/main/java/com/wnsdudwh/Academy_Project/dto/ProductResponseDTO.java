@@ -1,9 +1,11 @@
 package com.wnsdudwh.Academy_Project.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -35,11 +37,15 @@ public class ProductResponseDTO
 
     private List<String> subImages;
 
+    @Builder.Default
+    private List<ProductOptionResponseDTO> options = new ArrayList<>();
+
     // 상품 표시 여부
     private boolean visible;
     // 상품의 신상품 여부
     private boolean newProduct;
     // 상품이 게시될 날짜
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
     // 상품의 한줄 태그 ex)#펜더, ~~
     private String tags;

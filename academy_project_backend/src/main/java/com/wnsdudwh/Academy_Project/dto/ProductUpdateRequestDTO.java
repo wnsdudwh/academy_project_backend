@@ -1,5 +1,6 @@
 package com.wnsdudwh.Academy_Project.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class ProductUpdateRequestDTO
     // 상품의 신상품 여부
     private boolean newProduct;
     // 상품이 게시될 날짜
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
     // 상품의 한줄 태그 ex)#펜더, ~~
     private String tags;

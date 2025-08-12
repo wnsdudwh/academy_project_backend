@@ -64,4 +64,15 @@ public class Member
     @Column(nullable = false)
     @Builder.Default
     private boolean enable = false;
+
+    // DB에 저장되기 전 role 값이 null이면 기본값 ROLE_USER로 설정해줌
+    // @Builder.Default가 누락되는 경우를 대비한 안전장치 역할
+    @PrePersist
+    public void prePersist()
+    {
+        if (role == null)
+        {
+            role = Role.ROLE_USER;
+        }
+    }
 }

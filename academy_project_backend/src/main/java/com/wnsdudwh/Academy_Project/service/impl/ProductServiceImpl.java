@@ -1,5 +1,6 @@
 package com.wnsdudwh.Academy_Project.service.impl;
 
+import com.wnsdudwh.Academy_Project.dto.ProductOptionResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductOptionSaveDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.ProductSaveRequestDTO;
@@ -11,6 +12,7 @@ import com.wnsdudwh.Academy_Project.repository.ProductRepository;
 import com.wnsdudwh.Academy_Project.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService
@@ -86,6 +90,46 @@ public class ProductServiceImpl implements ProductService
         }
     }
 
+    @Override
+    public ProductResponseDTO getProductById(Long id)
+    {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        List<ProductOption> optionList = productOptionRepository.findByProduct(product);
+
+        List<ProductOptionResponseDTO> optionDTOList = optionList.stream()
+                .map(opt -> ProductOptionResponseDTO.builder()
+                        .optionName(opt.getOptionName())
+                        .optionType(opt.getOptionType())
+                        .additionalPrice(opt.getAdditionalPrice())
+                        .stock(opt.getStock())
+                        .soldOut(opt.isSoldOut())
+                        .build()
+                ).toList();
+
+        return ProductResponseDTO.builder()
+                .id(product.getId())
+                .productCode(product.getProductCode())
+                .name(product.getName())
+                .price(product.getPrice())
+                .discount(product.isDiscount())
+                .discountRate(product.getDiscountRate())
+                .pointRate(product.getPointRate())
+                .shippingFee(product.getShippingFee())
+                .stockTotal(product.getStockTotal())
+                .status(product.getStatus().name())
+                .thumbnailUrl(product.getThumbnailUrl())
+                .shortDescription(product.getShortDescription())
+                .brandName(product.getBrand().getName())
+                .categoryName(product.getCategory().getName())
+                .visible(product.isVisible())
+                .newProduct(product.isNewProduct())
+                .releaseDate(product.getReleaseDate())
+                .tags(product.getTags())
+                .options(optionDTOList) // ✅ 옵션 포함
+                .build();
+    }
 
     @Override
     @Transactional
@@ -108,9 +152,9 @@ public class ProductServiceImpl implements ProductService
         productRepository.save(product); // 🔐 FK 미리 필요
 
         // ✅ 옵션 저장
-        if (dto.getOptionList() != null && !dto.getOptionList().isEmpty())
+        if (dto.getOptions() != null && !dto.getOptions().isEmpty())
         {
-            for (ProductOptionSaveDTO optionDTO : dto.getOptionList())
+            for (ProductOptionSaveDTO optionDTO : dto.getOptions())
             {
                 ProductOption option = ProductOption.builder()
                         .optionName(optionDTO.getOptionName())
@@ -121,21 +165,6 @@ public class ProductServiceImpl implements ProductService
                         .product(product)
                         .build();
 
-                productOptionRepository.save(option);
-            }
-        }
-
-        if (dto.getOptionList() != null)
-        {
-            for (ProductOptionSaveDTO optionDTO : dto.getOptionList()) {
-                ProductOption option = ProductOption.builder()
-                        .optionName(optionDTO.getOptionName())
-                        .optionType(optionDTO.getOptionType())
-                        .additionalPrice(optionDTO.getAdditionalPrice())
-                        .stock(optionDTO.getStock())
-                        .soldOut(optionDTO.isSoldOut())
-                        .product(product)
-                        .build();
                 productOptionRepository.save(option);
             }
         }
@@ -152,6 +181,21 @@ public class ProductServiceImpl implements ProductService
         }
 
         saveImages(dto, dto.getProductCode());
+
+        // ✅ 옵션 디버깅용 로그 추가 (테스트용)
+        if (dto.getOptions() != null)
+        {
+            log.info("옵션 갯수: {}", dto.getOptions().size());
+            dto.getOptions().forEach(opt ->
+                    log.info("옵션 이름: {}, 타입: {}, 추가가격: {}, 재고: {}, 품절여부: {}",
+                            opt.getOptionName(),
+                            opt.getOptionType(),
+                            opt.getAdditionalPrice(),
+                            opt.getStock(),
+                            opt.isSoldOut()
+                    )
+            );
+        }
 
         return product.getId();
     }
@@ -171,11 +215,12 @@ public class ProductServiceImpl implements ProductService
                             ? price.multiply(rate).intValue()
                             : rawPrice;
 
-                    System.out.println("상품명: " + product.getName());
-                    System.out.println("discount: " + product.isDiscount());
-                    System.out.println("할인율 (discountRate): " + discountRate);
-                    System.out.println("계산된 rate: " + rate);
-                    System.out.println("계산된 할인가 (discountPrice): " + discountPrice);
+                    // ✅ 디버깅용 콘솔
+//                    System.out.println("상품명: " + product.getName());
+//                    System.out.println("discount: " + product.isDiscount());
+//                    System.out.println("할인율 (discountRate): " + discountRate);
+//                    System.out.println("계산된 rate: " + rate);
+//                    System.out.println("계산된 할인가 (discountPrice): " + discountPrice);
 
 
                     // ✅ 계산한 값을 빌더에 넣기
@@ -247,7 +292,27 @@ public class ProductServiceImpl implements ProductService
         {
             throw new RuntimeException("이미지 저장 중 오류", e);
         }
+        
+        // 기존 옵션 삭제
+        productOptionRepository.deleteByProduct(product);
 
+        // 새 옵션 저장
+        if (dto.getOptions() != null && !dto.getOptions().isEmpty())
+        {
+            for (ProductOptionSaveDTO optionDTO : dto.getOptions())
+            {
+                ProductOption option = ProductOption.builder()
+                        .optionName(optionDTO.getOptionName())
+                        .optionType(optionDTO.getOptionType())
+                        .additionalPrice(optionDTO.getAdditionalPrice())
+                        .stock(optionDTO.getStock())
+                        .soldOut(optionDTO.isSoldOut())
+                        .product(product)
+                        .build();
+                productOptionRepository.save(option);
+            }
+        }
+        
         productRepository.save(product);
         return product.getId();
     }
@@ -282,17 +347,4 @@ public class ProductServiceImpl implements ProductService
         productRepository.save(product);
     }
 
-    //통합으로 인한 주석 추후 삭제요망.
-//    @Override
-//    @Transactional
-//    public Long updateProduct(Long id, ProductSaveRequestDTO dto)
-//    {
-//        Product product = productRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
-//
-//        Object[] bc = getBrandAndCategory(dto.getBrandId(), dto.getCategoryId());
-//        applyDtoToProduct(product, dto, (Brand) bc[0], (Category) bc[1]);
-//
-//        return product.getId();
-//    }
 }

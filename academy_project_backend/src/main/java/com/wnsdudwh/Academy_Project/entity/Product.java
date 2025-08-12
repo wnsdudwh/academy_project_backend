@@ -95,6 +95,11 @@ public class Product
     @Builder.Default
     private List<ProductImage> imageList = new ArrayList<>();
 
+    // 🔗 상품 옵션 연관관계 (OneToMany)
+    @Builder.Default
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOption> options = new ArrayList<>();
+
     // 등록일 자동 설정 (엔티티 저장 시 자동 설정)
     @PrePersist
     public void prePersist()
@@ -103,10 +108,12 @@ public class Product
     }
 
     // 상품 진열 여부
+    @Builder.Default
     @Column(nullable = false)
     private boolean visible = true;
 
     // 신상품 여부 (NEW 뱃지 표시용)
+    @Builder.Default
     @Column(nullable = false)
     private boolean newProduct = false;
 

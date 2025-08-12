@@ -20,4 +20,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# DB 스크립트는 Git에 포함
+!db/
+!db/**
+
 .gradle/
