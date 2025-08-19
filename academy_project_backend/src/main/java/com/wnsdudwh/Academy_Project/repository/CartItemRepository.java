@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CartItemrepository extends JpaRepository<CartItem, Long>
+public interface CartItemRepository extends JpaRepository<CartItem, Long>
 {
     // 장바구니, 상품, 옵션이 모두 일치하는 항목을 찾는 메서드
     // -> 이미 장바구니에 담긴 상품인지 확인할 때 사용

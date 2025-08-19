@@ -19,7 +19,7 @@ public class Member
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idx;
+    private Long idx;
 
     @Column(nullable = false)
     private String usernumber;

@@ -31,19 +31,27 @@ public class AttendanceController
     {
         // 1.JWT에서 유저 아이디 추출
         String token = jwtUtil.resolveToken(request);
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userid = jwtUtil.extractUsername(token);
 
-        // 2. 해당 유저 정보 가져오기
-        Member member = memberRepository.findByUserid(userid);
-        if (member == null)
+        // 2. 해당 유저 정보를 Optional<Member> (상자)에 담아 가져오기
+        Optional<Member> optionalMember = memberRepository.findByUserid(userid);
+
+        // 3. 상자가 비어있는지 (회원이 없는지) 확인
+        if (optionalMember.isEmpty()) // (수정) .isEmpty()로 확인
         {
             return ResponseEntity.badRequest().body("입력된 사용자 정보를 찾을 수 없습니다.");
         }
 
-        // 3. 오늘 날짜 확인
+        // 4. 상자에서 실제 Member 객체(내용물) 꺼내기
+        Member member = optionalMember.get(); // (수정) .get()으로 꺼내기
         LocalDate today = LocalDate.now();
 
-        // 4. 오늘 날짜에 출석한 적 있는지 확인
+
+        // 5. 꺼낸 Member 객체를 사용 해 오늘 날짜에 출석한 적 있는지 확인
         Optional<Attendance> result = attendanceRepository.findByMemberAndDate(member, today);
         if (result.isPresent())
         {
@@ -67,18 +75,22 @@ public class AttendanceController
 
     // 출석판에 출석 한 날짜 V 표시
     @GetMapping("/list")
-    public ResponseEntity<?> getAttendanceList(
-            HttpServletRequest request,
-            @RequestParam int year,
-            @RequestParam int month) {
-
+    public ResponseEntity<?> getAttendanceList(HttpServletRequest request, @RequestParam int year, @RequestParam int month)
+    {
         String token = jwtUtil.resolveToken(request);
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userid = jwtUtil.extractUsername(token);
 
-        Member member = memberRepository.findByUserid(userid);
-        if (member == null) {
+        Optional<Member> optionalMember = memberRepository.findByUserid(userid);
+        if (optionalMember.isEmpty())
+        {
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
+
+        Member member = optionalMember.get();
 
         // 해당 월의 시작일과 마지막일 구하기
         LocalDate startDate = LocalDate.of(year, month, 1);

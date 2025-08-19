@@ -59,20 +59,25 @@ public class MemberController
         return ResponseEntity.ok(!exists); // true = 사용 가능, false = 이미 있음
     }
 
-
     @GetMapping("/mypage")
     public ResponseEntity<?> getMyPageInfo(HttpServletRequest request)
     {
         // 1. 토큰에서 아이디 추출
         String token = jwtUtil.resolveToken(request);
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userId = jwtUtil.extractUsername(token);
 
         // 2. DB에서 사용자 정보 가져오기
-        Member member = memberRepository.findByUserid(userId);
-        if (member == null)
+        Optional<Member> optionalMember = memberRepository.findByUserid(userId);
+        if (optionalMember.isEmpty())
         {
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
+
+        Member member = optionalMember.get();
 
         // 3. 응답에 필요한 정보만 담기 (프론트로 보낼 정보 {userInfo?.phone})
         Map<String, Object> response = new HashMap<>();
@@ -91,14 +96,20 @@ public class MemberController
     {
         // 🔐 1. 토큰에서 아이디 추출
         String token = jwtUtil.resolveToken(request); // Request Header에서 JWT 추출
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userId = jwtUtil.extractUsername(token); // JWT에서 유저 ID 추출
 
         // 🔎 2. DB에서 기존 회원 정보 조회
-        Member member = memberRepository.findByUserid(userId);
-        if (member == null)
+        Optional<Member> optionalMember = memberRepository.findByUserid(userId);
+        if (optionalMember.isEmpty())
         {
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
+
+        Member member = optionalMember.get();
 
         // ✅ 3. 닉네임 수정 (비어있지 않고 변경 시도 시)
         if (dto.getNickname() != null && !dto.getNickname().isEmpty())
@@ -142,14 +153,19 @@ public class MemberController
     {
         // 🔐 1. 토큰에서 아이디 추출
         String token = jwtUtil.resolveToken(request); // Request Header에서 JWT 추출
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userId = jwtUtil.extractUsername(token); // JWT에서 유저 ID 추출
 
         // 🔎 2. DB에서 기존 회원 정보 조회
-        Member member = memberRepository.findByUserid(userId);
-        if (member == null)
+        Optional<Member> optionalMember = memberRepository.findByUserid(userId);
+        if (optionalMember.isEmpty())
         {
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
+        Member member = optionalMember.get();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         
         // 3.현재 비밀번호 일치 확인
@@ -176,14 +192,20 @@ public class MemberController
     public ResponseEntity<?> updatePhone(@RequestBody MemberDTO dto, HttpServletRequest request)
     {
         String token = jwtUtil.resolveToken(request);
+        if (token == null)
+        {
+            return ResponseEntity.badRequest().body("토큰이 없습니다.");
+        }
         String userId = jwtUtil.extractUsername(token);
 
-        Member member = memberRepository.findByUserid(userId);
+        Optional<Member> optionalMember = memberRepository.findByUserid(userId);
 
-        if (member == null)
+        if (optionalMember.isEmpty())
         {
             return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
         }
+
+        Member member = optionalMember.get();
 
         if (dto.getPhone() != null && !dto.getPhone().isEmpty())
         {

@@ -35,7 +35,7 @@ public class AuthController
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO)
     {
         // ✅ 1. 입력받은 아이디로 회원 정보 조회
-        Member member = memberRepository.findByUserid(loginRequestDTO.getUserid());
+        Member member = memberRepository.findByUserid(loginRequestDTO.getUserid()).orElseThrow(null);   // Optional에서 Member를 꺼내고, 없으면 null을 반환함
 
         // ❌ 회원이 없으면 에러 응답
         if (member == null)
