@@ -59,7 +59,7 @@ public class AuthController
         memberRepository.save(member);
 
         // ✅ 3. 로그인 성공 → JWT 토큰 발급 -> ~
-        String token = jwtUtil.generateToken(member.getUserid());
+        String token = jwtUtil.generateToken(member);
 
         // ✅ 4. 토큰과 닉네임을 DTO에 담아서 응답 -> 권한(Role) 추가
         LoginResponseDTO response = new LoginResponseDTO(token, member.getNickname(), member.getRole().name());

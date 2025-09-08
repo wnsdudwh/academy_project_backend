@@ -19,6 +19,18 @@ public interface CartService
      */
     CartResponseDTO getCartByMemberId(Long memberId);
 
-    // TODO: 3. 장바구니 상품 수량 변경
-    // TODO: 4. 장바구니 상품 삭제
+    /**
+     * 장바구니 상품의 수량을 변경하는 메서드
+     * @param memberId 현재 로그인된 회원의 ID (소유권 확인용)
+     * @param cartItemId 수량을 변경할 장바구니 상품의 ID
+     * @param quantity 새로운 수량
+     */
+    void updateItemQuantity(Long memberId, Long cartItemId, int quantity);
+
+    /**
+     * 장바구니 상품을 삭제하는 메서드
+     * @param memberId 현재 로그인된 회원의 ID (소유권 확인용)
+     * @param cartItemId 삭제할 장바구니 상품의 ID
+     */
+    void deleteCartItem(Long memberId, Long cartItemId);
 }

@@ -37,7 +37,9 @@ public class CartItem
     @JoinColumn(name = "product_option_id")
     private ProductOption productOption;
 
+    // 장바구니에 담은 개수
     private int quantity;
+    // 장바구니에 있으나 선택 되었는지?
     private boolean selected;
 
     @CreatedDate

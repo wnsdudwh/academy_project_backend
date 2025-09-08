@@ -28,3 +28,6 @@ yarn-error.log*
 
 # 민감한 설정 파일 무시
 application-local.properties
+
+# IntelliJ 개인 설정 파일 무시
+/.idea/

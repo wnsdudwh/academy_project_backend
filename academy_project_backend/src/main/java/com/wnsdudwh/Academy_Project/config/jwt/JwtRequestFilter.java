@@ -34,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter
         if (token != null && jwtUtil.validateToken(token))
         {
             // 토큰이 유효하면 사용자 정보 로드
-            String userid = jwtUtil.extractUsername(token);
+            String userid = jwtUtil.getUsernameFromToken(token);
             UserDetails userDetails = principalDetailsService.loadUserByUsername(userid);
 
             // SecurityContext에 인증 정보 설정

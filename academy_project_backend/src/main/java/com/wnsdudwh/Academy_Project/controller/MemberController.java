@@ -68,7 +68,7 @@ public class MemberController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userId = jwtUtil.extractUsername(token);
+        String userId = jwtUtil.getUsernameFromToken(token);
 
         // 2. DB에서 사용자 정보 가져오기
         Optional<Member> optionalMember = memberRepository.findByUserid(userId);
@@ -100,7 +100,7 @@ public class MemberController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userId = jwtUtil.extractUsername(token); // JWT에서 유저 ID 추출
+        String userId = jwtUtil.getUsernameFromToken(token); // JWT에서 유저 ID 추출
 
         // 🔎 2. DB에서 기존 회원 정보 조회
         Optional<Member> optionalMember = memberRepository.findByUserid(userId);
@@ -157,7 +157,7 @@ public class MemberController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userId = jwtUtil.extractUsername(token); // JWT에서 유저 ID 추출
+        String userId = jwtUtil.getUsernameFromToken(token); // JWT에서 유저 ID 추출
 
         // 🔎 2. DB에서 기존 회원 정보 조회
         Optional<Member> optionalMember = memberRepository.findByUserid(userId);
@@ -196,7 +196,7 @@ public class MemberController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userId = jwtUtil.extractUsername(token);
+        String userId = jwtUtil.getUsernameFromToken(token);
 
         Optional<Member> optionalMember = memberRepository.findByUserid(userId);
 

@@ -90,14 +90,29 @@ public class ProductServiceImpl implements ProductService
         }
     }
 
+    // "상품 상세" 조회 메서드
     @Override
     public ProductResponseDTO getProductById(Long id)
     {
-        Product product = productRepository.findById(id)
+        // JOIN FETCH를 사용해 brand, category, imageList를 한 번에 가져옵니다.
+        Product product = productRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
 
+        // options 목록은 별도로 추가 조회
         List<ProductOption> optionList = productOptionRepository.findByProduct(product);
 
+        // 할인가 계산 로직 (getAllProducts에서 그대로 가져옴)
+        int rawPrice = product.getPrice();
+        BigDecimal price = new BigDecimal(rawPrice);
+        BigDecimal discountRate = product.getDiscountRate();
+        BigDecimal hundred = new BigDecimal("100");
+        BigDecimal rate = BigDecimal.ONE.subtract(discountRate.divide(hundred));
+
+        int discountPrice = product.isDiscount()
+                ? price.multiply(rate).intValue()
+                : rawPrice;
+
+        // 옵션 DTO 변환
         List<ProductOptionResponseDTO> optionDTOList = optionList.stream()
                 .map(opt -> ProductOptionResponseDTO.builder()
                         .optionName(opt.getOptionName())
@@ -107,6 +122,11 @@ public class ProductServiceImpl implements ProductService
                         .soldOut(opt.isSoldOut())
                         .build()
                 ).toList();
+
+        // 서브 이미지 URL 목록 생성
+        List<String> subImageUrls = product.getImageList().stream()
+                .map(ProductImage::getImageUrl)
+                .toList();
 
         return ProductResponseDTO.builder()
                 .id(product.getId())
@@ -121,13 +141,17 @@ public class ProductServiceImpl implements ProductService
                 .status(product.getStatus().name())
                 .thumbnailUrl(product.getThumbnailUrl())
                 .shortDescription(product.getShortDescription())
+                .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
                 .brandName(product.getBrand().getName())
+                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
                 .categoryName(product.getCategory().getName())
                 .visible(product.isVisible())
                 .newProduct(product.isNewProduct())
                 .releaseDate(product.getReleaseDate())
                 .tags(product.getTags())
-                .options(optionDTOList) // ✅ 옵션 포함
+                .discountPrice(discountPrice)   // 최종 판매가(할인률 포함)
+                .subImages(subImageUrls) // subImages 포함
+                .options(optionDTOList) //  옵션 포함
                 .build();
     }
 
@@ -200,8 +224,12 @@ public class ProductServiceImpl implements ProductService
         return product.getId();
     }
 
+    // "상품 목록" 조회 메서드
     public List<ProductResponseDTO> getAllProducts()
     {
+        //  JOIN FETCH를 사용해 Product와 Brand, Category를 한 번에 다 가져옴.
+        List<Product> products = productRepository.findAllWithBrandAndCategory();
+
         return productRepository.findAll().stream()
                 .map(product ->
                 {
@@ -239,7 +267,7 @@ public class ProductServiceImpl implements ProductService
                             .shortDescription(product.getShortDescription())
                             .brandName(product.getBrand().getName())
                             .categoryName(product.getCategory().getName())
-                            .discountPrice(discountPrice) // ✅ 여기에 세팅!
+                            .discountPrice(discountPrice)
                             .visible(product.isVisible())
                             .newProduct(product.isNewProduct())
                             .releaseDate(product.getReleaseDate())

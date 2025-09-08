@@ -1,10 +1,12 @@
 package com.wnsdudwh.Academy_Project.dto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class CartResponseDTO
 {

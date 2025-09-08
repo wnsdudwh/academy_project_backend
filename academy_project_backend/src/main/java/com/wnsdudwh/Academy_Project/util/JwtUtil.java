@@ -1,8 +1,10 @@
 package com.wnsdudwh.Academy_Project.util;
 
+import com.wnsdudwh.Academy_Project.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -13,16 +15,19 @@ import java.util.Date;
 @Component
 public class JwtUtil
 {
-    // 🔐 시크릿 키 (길고 랜덤한 문자열로 설정)
-    private final String SECRET_KEY = "mySecretKey1234567890123456789012345678901234567890";
+    // 🔐 시크릿 키 (길고 랜덤한 문자열로 설정) -> 프로퍼티 파일에서 값을 주입받게 수정
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     // ⏰ 토큰 만료시간 (예: 1시간 [현 24시간])
     private final long EXPIRATION = 1000 * 60 * 60 * 24;
 
-    // 🔑 JWT 발급 메서드
-    public String generateToken(String username)
+    public String generateToken(Member member)
     {
-        Claims claims = Jwts.claims().setSubject(username);
+        Claims claims = Jwts.claims();
+        claims.setSubject(member.getUserid());
+        claims.put("role", member.getRole().name());
+        claims.put("nickname", member.getNickname());
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + EXPIRATION);
@@ -34,6 +39,7 @@ public class JwtUtil
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    // 🔑 JWT 발급 메서드
 
     // ✅ JWT 검증
     public boolean validateToken(String token)
@@ -78,16 +84,4 @@ public class JwtUtil
 
         return null;
     }
-
-    // 🔓 토큰에서 사용자 아이디 추출
-    public String extractUsername(String token)
-    {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject(); // 🔑 sub에 해당하는 값이 아이디
-    }
-
 }

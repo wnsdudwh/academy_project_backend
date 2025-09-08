@@ -35,7 +35,7 @@ public class AttendanceController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userid = jwtUtil.extractUsername(token);
+        String userid = jwtUtil.getUsernameFromToken(token);
 
         // 2. 해당 유저 정보를 Optional<Member> (상자)에 담아 가져오기
         Optional<Member> optionalMember = memberRepository.findByUserid(userid);
@@ -82,7 +82,7 @@ public class AttendanceController
         {
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
-        String userid = jwtUtil.extractUsername(token);
+        String userid = jwtUtil.getUsernameFromToken(token);
 
         Optional<Member> optionalMember = memberRepository.findByUserid(userid);
         if (optionalMember.isEmpty())

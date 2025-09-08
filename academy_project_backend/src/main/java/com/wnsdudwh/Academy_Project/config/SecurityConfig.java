@@ -5,6 +5,7 @@ import com.wnsdudwh.Academy_Project.config.jwt.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,7 @@ public class SecurityConfig
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
         http
+                .cors(Customizer.withDefaults())    //  CORS 설정 활성화
                 .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .formLogin(form -> form.disable()) // Form 로그인 방식 비활성화
                 .httpBasic(httpBasic -> httpBasic.disable()) // HTTP Basic 인증 방식 비활성화
@@ -32,9 +34,19 @@ public class SecurityConfig
 
                 // ✅ 3. URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 아래 경로들은 인증 없이 접근 허용
-                        .requestMatchers("/auth/**", "/attendance/**", "/products/**").permitAll()
-                        // 그 외 모든 경로는 인증 필요
+                        // 1. 누구나 접근 가능한 "공개" 경로들
+                        .requestMatchers(
+                                "/auth/**",          // 로그인, 회원가입
+                                "/api/products/**",      // 상품 관련 페이지/API (일반 사용자용)
+                                "/api/brand/**",     // 브랜드 API
+                                "/api/category/**",  // 카테고리 API
+                                "/upload/**"         // 이미지 파일
+                        ).permitAll()
+
+                        // 2. "ADMIN" 역할이 필요한 경로
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // 3. 위에서 설정한 경로를 제외한 "나머지 모든 경로"는 인증(로그인)이 필요함
                         .anyRequest().authenticated()
                 )
                 // ✅ 4. JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 배치
