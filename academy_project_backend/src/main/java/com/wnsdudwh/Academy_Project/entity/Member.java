@@ -24,7 +24,7 @@ public class Member
     @Column(nullable = false)
     private String usernumber;
 
-    @Column(nullable = false, length = 16, unique = true)
+    @Column(nullable = false, length = 255, unique = true)
     private String userid;
 
     @Column(nullable = false)

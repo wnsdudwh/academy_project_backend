@@ -15,13 +15,13 @@ public class WebConfig implements WebMvcConfigurer
     {
         registry.addMapping("/**")
                 .allowedOrigins("http://180.64.38.234:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
 
         registry.addMapping("/**")
                 .allowedOrigins("http://192.168.25.60:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
