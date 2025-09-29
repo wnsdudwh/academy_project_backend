@@ -3,6 +3,7 @@ package com.wnsdudwh.Academy_Project.controller;
 import com.wnsdudwh.Academy_Project.config.auth.PrincipalDetails;
 import com.wnsdudwh.Academy_Project.dto.AddressResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.AddressSaveRequestDTO;
+import com.wnsdudwh.Academy_Project.dto.AddressUpdateRequestDTO;
 import com.wnsdudwh.Academy_Project.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,4 +48,24 @@ public class AddressController
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAddress);
     }
 
+    // 주소록 단건 수정 API
+    @PutMapping("{addressId}")
+    public ResponseEntity<AddressResponseDTO> updateAddress(@PathVariable Long addressId, @RequestBody AddressUpdateRequestDTO requestDTO, @AuthenticationPrincipal PrincipalDetails principalDetails)
+    {
+        Long memberIdx = principalDetails.getMember().getIdx();
+        AddressResponseDTO updateAddress = addressService.updateAddress(memberIdx, addressId, requestDTO);
+
+        return ResponseEntity.ok(updateAddress);
+    }
+
+    // 주소록 단건 삭제 API
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId, @AuthenticationPrincipal PrincipalDetails principalDetails)
+    {
+        Long memberIdx = principalDetails.getMember().getIdx();
+        addressService.deleteAddress(memberIdx, addressId);
+
+        // 성공적으로 삭제되었지만, 본문에 보낼 데이터가 없으므로 204 No Content 응답을 보냅니다.
+        return ResponseEntity.noContent().build();
+    }
 }

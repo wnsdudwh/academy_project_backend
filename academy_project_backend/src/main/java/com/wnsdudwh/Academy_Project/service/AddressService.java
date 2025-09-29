@@ -2,6 +2,7 @@ package com.wnsdudwh.Academy_Project.service;
 
 import com.wnsdudwh.Academy_Project.dto.AddressResponseDTO;
 import com.wnsdudwh.Academy_Project.dto.AddressSaveRequestDTO;
+import com.wnsdudwh.Academy_Project.dto.AddressUpdateRequestDTO;
 
 import java.util.List;
 
@@ -13,9 +14,9 @@ public interface AddressService
     // 주소록 추가
     AddressResponseDTO addAddress(Long memberIdx, AddressSaveRequestDTO requestDTO);
 
-    // (추후 구현) 주소록 수정
-    // AddressResponseDTO updateAddress(Long addressId, AddressUpdateRequestDto requestDto);
+    // 주소록 수정
+     AddressResponseDTO updateAddress(Long memberIdx, Long addressId, AddressUpdateRequestDTO requestDTO);
 
-    // (추후 구현) 주소록 삭제
-    // void deleteAddress(Long addressId);
+    // 주소록 삭제
+     void deleteAddress(Long memberIdx, Long addressId);
 }
