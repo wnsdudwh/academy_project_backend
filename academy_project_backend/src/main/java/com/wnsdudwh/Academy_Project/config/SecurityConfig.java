@@ -3,10 +3,12 @@ package com.wnsdudwh.Academy_Project.config;
 import com.wnsdudwh.Academy_Project.config.auth.CustomOAuth2UserService;
 import com.wnsdudwh.Academy_Project.config.auth.OAuth2LoginSuccessHandler;
 import com.wnsdudwh.Academy_Project.config.auth.PrincipalDetailsService;
+import com.wnsdudwh.Academy_Project.config.jwt.JwtAuthenticationEntryPoint;
 import com.wnsdudwh.Academy_Project.config.jwt.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +23,7 @@ public class SecurityConfig
 {
     private final PrincipalDetailsService principalDetailsService;  // 주입받는 대상을 변경
     private final JwtRequestFilter jwtRequestFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomOAuth2UserService customOAuth2UserService;  // Oauth2.0 구글 로그인
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;  // Oauth2.0 로그인 성동 처리 전담 주입
 
@@ -35,6 +38,9 @@ public class SecurityConfig
 
                 // ✅ 2. 세션을 사용하지 않도록 설정 (JWT 사용 시 필수)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // 예외 처리 설정
+                .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 
                 // oauth2Login 설정 추가
                 .oauth2Login(oauth2 -> oauth2
@@ -52,22 +58,32 @@ public class SecurityConfig
 
                 // ✅ 3. URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 누구나 접근 가능한 "공개" 경로들
+                        // 1. [가장 구체적인 규칙] 관리자만 접근 가능한 상품 관리 API
                         .requestMatchers(
-          "/",                 // 메인 페이지
-                                "/auth/**",          // 로그인, 회원가입
-                                "/api/products/**",      // 상품 관련 페이지/API (일반 사용자용)
-                                "/api/brand/**",     // 브랜드 API
-                                "/api/category/**",  // 카테고리 API
-                                "/upload/**",         // 이미지 파일
-                                "/favicon.ico"      // 파비콘 이미지
-//                                "/**/*.svg"     // 모든 svg 파일 허용
+                                "/api/products/register",
+                                "/api/products/update/**",
+                                "/api/products/{id}/visibility",
+                                "/api/products/{id}/status",
+                                "/api/products/{id}/soft-delete"
+                        ).hasRole("ADMIN")
+
+                        // 2. [그 다음 구체적인 규칙] 상품 조회(GET)는 누구나 가능
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
+                        // 3. [기타 공개 경로] 기존에 있던 다른 공개 경로들
+                        .requestMatchers(
+                                "/",
+                                "/auth/**",
+                                "/api/brand/**",
+                                "/api/category/**",
+                                "/upload/**",
+                                "/favicon.ico"
                         ).permitAll()
 
-                        // 2. "ADMIN" 역할이 필요한 경로
+                        // 4. [기타 관리자 경로] /admin/으로 시작하는 다른 경로가 있을 경우를 대비
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // 3. 위에서 설정한 경로를 제외한 "나머지 모든 경로"는 인증(로그인)이 필요함
+                        // 5. [가장 마지막] 위에서 지정하지 않은 나머지 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 // ✅ 4. JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 배치
