@@ -14,13 +14,13 @@ public class WebConfig implements WebMvcConfigurer
     public void addCorsMappings(CorsRegistry registry)
     {
         registry.addMapping("/**")
-                .allowedOrigins("http://180.64.38.234:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-
-        registry.addMapping("/**")
-                .allowedOrigins("http://192.168.25.60:3000")
+                .allowedOrigins
+                (
+                        "http://localhost:3000",
+                        "http://3.34.46.2:3000",     // AWS 서버 Public IP
+                        "http://192.168.25.60:3000",   // 내 PC Private IP
+                        "http://180.64.38.234:3000"    // 내 PC Public IP
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
