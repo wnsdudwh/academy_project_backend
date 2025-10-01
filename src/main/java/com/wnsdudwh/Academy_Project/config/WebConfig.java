@@ -19,7 +19,8 @@ public class WebConfig implements WebMvcConfigurer
                         "http://localhost:3000",
                         "http://3.34.46.2:3000",     // AWS 서버 Public IP
                         "http://192.168.25.60:3000",   // 내 PC Private IP
-                        "http://180.64.38.234:3000"    // 내 PC Public IP
+                        "http://180.64.38.234:3000",    // 내 PC Public IP
+                        "http://wnsdudwhpf.duckdns.org:3000/"    // 내 AWS 서버 외부 도메인
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
