@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/attendance")
+@RequestMapping("/api/attendance")
 @RequiredArgsConstructor
 public class AttendanceController
 {
